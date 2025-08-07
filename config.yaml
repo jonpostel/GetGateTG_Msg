@@ -2,13 +2,13 @@
 
 # 交易对列表，包含最大预期价格和最低预期价格
 pairs:
-  - symbol: ADA_USDT
-    max_price: 5.5
-    min_price: 3.4
-  - symbol: DOT_USDT
+  - symbol: BLD_USDT
+    max_price: 0.0095
+    min_price: 0.0085
+  - symbol: AKT_USDT
     max_price: 2.0
     min_price: 1.0
 
 Telegram:
-  botToken: ""
-  chatID: ""
+  botToken: "7734102794:AAGD7ZEwCoD6sFde8T7c6nNmfn7wy4Q1wCI"
+  chatID: "7691276994"
