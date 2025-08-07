@@ -1,0 +1,14 @@
+# Gate.io API 配置文件
+
+# 交易对列表，包含最大预期价格和最低预期价格
+pairs:
+  - symbol: ADA_USDT
+    max_price: 5.5
+    min_price: 3.4
+  - symbol: DOT_USDT
+    max_price: 2.0
+    min_price: 1.0
+
+Telegram:
+  botToken: ""
+  chatID: ""
