@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 parseAndDisplayConfig(data);
-                showNotification('配置加载成功', 'success');
+                showNotification('配置已加载', 'success');
             })
             .catch(error => {
                 console.error('加载配置失败:', error);

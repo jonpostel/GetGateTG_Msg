@@ -86,13 +86,3 @@ func StartWebServer() {
 	fmt.Printf("当前目录: %s\n", dir)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
-
-// 复制文件
-func copyFile(src, dst string) error {
-	input, err := ioutil.ReadFile(src)
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(dst, input, 0644)
-}
