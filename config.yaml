@@ -1,4 +1,8 @@
-# Gate.io API 配置文件
+保存配置失败: 保存配置失败# Gate.io API 配置文件
+
+# 服务器配置
+Server:
+  port: 8080
 
 # 交易对列表，包含最大预期价格和最低预期价格
 pairs:
@@ -10,5 +14,5 @@ pairs:
     min_price: 1.0
 
 Telegram:
-  botToken: ""
-  chatID: ""
+  botToken: 
+  chatID:

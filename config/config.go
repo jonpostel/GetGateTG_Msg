@@ -10,9 +10,15 @@ import (
 )
 
 type Config struct {
+	Server    Server       `yaml:"Server"`
 	Pairs     []PairConfig `yaml:"pairs"`
 	Cellframe Cellframe    `yaml:"Cellframe"`
 	Telegram  Telegram     `yaml:"Telegram"`
+}
+
+// Server 服务器配置结构体
+type Server struct {
+	Port int `yaml:"port"`
 }
 
 // PairConfig 交易对配置结构体
@@ -44,6 +50,9 @@ type PairInfo struct {
 
 // 配置对象
 var Myconfig = &Config{
+	Server: Server{
+		Port: 8080, // 默认端口
+	},
 	Pairs: []PairConfig{},
 	Cellframe: Cellframe{
 		WalletName: "",
