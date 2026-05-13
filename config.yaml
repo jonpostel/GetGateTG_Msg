@@ -1,4 +1,5 @@
 # Gate.io API 配置文件
+# Gate.io API 配置文件
 
 # 服务器配置
 Server:
@@ -22,4 +23,5 @@ CoinMarketCap:
 # Telegram 配置
 Telegram:
   botToken: 
+  chatID: 
   chatID: 
