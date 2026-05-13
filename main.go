@@ -92,6 +92,7 @@ func main() {
 	}
 
 	CheckFearGreedIndex(cfg)
+	fmt.Println("程序运行完成")
 }
 
 func startWebServer() {
