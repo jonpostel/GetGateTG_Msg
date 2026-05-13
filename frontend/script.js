@@ -1,115 +1,110 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // 初始化页面元素
-    const pairsContainer = document.getElementById('pairs-container');
-    const addPairBtn = document.getElementById('add-pair-btn');
-    const saveBtn = document.getElementById('save-btn');
-    const reloadBtn = document.getElementById('reload-btn');
-    const serverHostInput = document.getElementById('server-host');
-    const serverPortInput = document.getElementById('server-port');
-    const apiPrefixInput = document.getElementById('api-prefix');
-    const botTokenInput = document.getElementById('botToken');
-    const chatIDInput = document.getElementById('chatID');
-    const notification = document.getElementById('notification');
-    
-    // 加载配置
-    loadConfig();
-    
-    // 添加事件监听器
-    addPairBtn.addEventListener('click', addNewPair);
-    saveBtn.addEventListener('click', saveConfig);
-    reloadBtn.addEventListener('click', loadConfig);
-    
-    // 显示服务器配置（来自api-config.js）
-    serverHostInput.value = API_CONFIG.HOST;
-    serverPortInput.value = API_CONFIG.PORT;
-    apiPrefixInput.value = API_CONFIG.PATH_PREFIX;
-    
-    // 加载配置函数
-    function loadConfig() {
-        fetch(API_ENDPOINTS.CONFIG)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('无法加载配置文件');
-                }
-                return response.text();
-            })
-            .then(data => {
-                parseAndDisplayConfig(data);
-                showNotification('配置已加载', 'success');
-            })
-            .catch(error => {
-                console.error('加载配置失败:', error);
-                showNotification('加载配置失败: ' + error.message, 'error');
-            });
+(function() {
+    const elements = {
+        pairsContainer: document.getElementById('pairs-container'),
+        addPairBtn: document.getElementById('add-pair-btn'),
+        saveBtn: document.getElementById('save-btn'),
+        reloadBtn: document.getElementById('reload-btn'),
+        serverHostInput: document.getElementById('server-host'),
+        serverPortInput: document.getElementById('server-port'),
+        apiPrefixInput: document.getElementById('api-prefix'),
+        botTokenInput: document.getElementById('botToken'),
+        chatIDInput: document.getElementById('chatID'),
+        fearGreedInput: document.getElementById('fear-greed'),
+        fearGreedValue: document.getElementById('fear-greed-value'),
+        fearGreedLabel: document.getElementById('fear-greed-label'),
+        cmcApiKeyInput: document.getElementById('cmc-api-key'),
+        notification: document.getElementById('notification')
+    };
+
+    let currentConfig = null;
+
+    function init() {
+        elements.serverHostInput.value = API_CONFIG.HOST;
+        elements.serverPortInput.value = API_CONFIG.PORT;
+        elements.apiPrefixInput.value = API_CONFIG.PATH_PREFIX;
+
+        elements.addPairBtn.addEventListener('click', addNewPair);
+        elements.saveBtn.addEventListener('click', saveConfig);
+        elements.reloadBtn.addEventListener('click', loadConfig);
+        elements.fearGreedInput.addEventListener('input', updateFearGreedDisplay);
+
+        loadConfig();
     }
-    
-    // 解析并显示配置
-    function parseAndDisplayConfig(configText) {
-        const pairsConfig = [];
-        let telegramConfig = { botToken: '', chatID: '' };
-        
-        // 解析配置文件
-        const lines = configText.split('\n');
-        let currentSection = '';
-        
-        for (const line of lines) {
-            const trimmedLine = line.trim();
-            
-            // 跳过空行和注释
-            if (!trimmedLine || trimmedLine.startsWith('#')) {
-                continue;
-            }
-            
-            // 检查是否是新的配置段
-            if (trimmedLine.endsWith(':')) {
-                currentSection = trimmedLine.substring(0, trimmedLine.length - 1);
-                continue;
-            }
-            
-            // 根据当前配置段解析配置项
-            if (currentSection === 'pairs') {
-                // 解析交易对配置
-                if (trimmedLine.startsWith('- symbol:')) {
-                    const symbol = trimmedLine.substring('- symbol:'.length).trim();
-                    pairsConfig.push({ symbol, max_price: '', min_price: '' });
-                } else if (trimmedLine.includes('max_price:') && pairsConfig.length > 0) {
-                    const maxPrice = trimmedLine.substring(trimmedLine.indexOf('max_price:') + 'max_price:'.length).trim();
-                    pairsConfig[pairsConfig.length - 1].max_price = maxPrice;
-                } else if (trimmedLine.includes('min_price:') && pairsConfig.length > 0) {
-                    const minPrice = trimmedLine.substring(trimmedLine.indexOf('min_price:') + 'min_price:'.length).trim();
-                    pairsConfig[pairsConfig.length - 1].min_price = minPrice;
-                }
-            } else if (currentSection === 'Telegram') {
-                // 解析Telegram配置
-                if (trimmedLine.startsWith('botToken:')) {
-                    telegramConfig.botToken = trimmedLine.substring('botToken:'.length).trim();
-                } else if (trimmedLine.startsWith('chatID:')) {
-                    telegramConfig.chatID = trimmedLine.substring('chatID:'.length).trim();
-                }
-            }
+
+    async function loadConfig() {
+        try {
+            const data = await API.getConfig();
+            currentConfig = data;
+            displayConfig(data);
+            showNotification('配置已加载', 'success');
+        } catch (error) {
+            console.error('加载配置失败:', error);
+            showNotification('加载配置失败: ' + error.message, 'error');
         }
-        
-        // 显示服务器配置（从api-config.js获取）
-        serverHostInput.value = API_CONFIG.HOST;
-        serverPortInput.value = API_CONFIG.PORT;
-        apiPrefixInput.value = API_CONFIG.PATH_PREFIX;
-        
-        // 显示交易对配置
-        pairsContainer.innerHTML = '';
-        pairsConfig.forEach(pair => {
-            addPairToDOM(pair);
-        });
-        
-        // 显示Telegram配置
-        botTokenInput.value = telegramConfig.botToken;
-        chatIDInput.value = telegramConfig.chatID;
     }
-    
-    // 添加交易对到DOM
-    function addPairToDOM(pair) {
+
+    function displayConfig(config) {
+        if (config.server) {
+            elements.serverPortInput.value = config.server.port || '';
+        }
+
+        elements.pairsContainer.innerHTML = '';
+        if (config.pairs && Array.isArray(config.pairs)) {
+            config.pairs.forEach(pair => {
+                addPairToDOM(pair);
+            });
+        }
+
+        if (config.telegram) {
+            elements.botTokenInput.value = config.telegram.botToken || '';
+            elements.chatIDInput.value = config.telegram.chatID || '';
+        }
+
+        if (config.coinMarketCap) {
+            elements.cmcApiKeyInput.value = config.coinMarketCap.apiKey || '';
+        }
+
+        if (config.fearGreed !== undefined) {
+            elements.fearGreedInput.value = config.fearGreed;
+            updateFearGreedDisplay();
+        }
+    }
+
+    function updateFearGreedDisplay() {
+        const value = parseInt(elements.fearGreedInput.value) || 50;
+        elements.fearGreedValue.textContent = value;
+
+        let label = '中性';
+        let colorClass = 'neutral';
+
+        if (value <= 20) {
+            label = '极度恐惧';
+            colorClass = 'extreme-fear';
+        } else if (value <= 40) {
+            label = '恐惧';
+            colorClass = 'fear';
+        } else if (value <= 60) {
+            label = '中性';
+            colorClass = 'neutral';
+        } else if (value <= 80) {
+            label = '贪婪';
+            colorClass = 'greed';
+        } else {
+            label = '极度贪婪';
+            colorClass = 'extreme-greed';
+        }
+
+        elements.fearGreedLabel.textContent = label;
+        elements.fearGreedValue.className = 'fear-greed-value ' + colorClass;
+    }
+
+    function addPairToDOM(pair = { symbol: '', max_price: 0, min_price: 0 }) {
         const pairItem = document.createElement('div');
         pairItem.className = 'pair-item';
-        
+
+        const maxPriceVal = pair.max_price !== undefined && pair.max_price !== null ? pair.max_price : '';
+        const minPriceVal = pair.min_price !== undefined && pair.min_price !== null ? pair.min_price : '';
+
         pairItem.innerHTML = `
             <div class="pair-header">
                 <div class="pair-title">交易对</div>
@@ -121,109 +116,82 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div class="form-group">
                 <label>最高价格:</label>
-                <input type="text" class="pair-max-price" value="${pair.max_price || ''}">
+                <input type="number" step="any" class="pair-max-price" value="${maxPriceVal}">
             </div>
             <div class="form-group">
                 <label>最低价格:</label>
-                <input type="text" class="pair-min-price" value="${pair.min_price || ''}">
+                <input type="number" step="any" class="pair-min-price" value="${minPriceVal}">
             </div>
         `;
-        
-        // 添加删除按钮事件
+
         pairItem.querySelector('.remove-pair').addEventListener('click', function() {
             pairItem.remove();
         });
-        
-        pairsContainer.appendChild(pairItem);
+
+        elements.pairsContainer.appendChild(pairItem);
     }
-    
-    // 添加新的交易对
+
     function addNewPair() {
-        addPairToDOM({
-            symbol: '',
-            max_price: '',
-            min_price: ''
-        });
+        addPairToDOM({ symbol: '', max_price: 0, min_price: 0 });
     }
-    
-    // 保存配置
-    function saveConfig() {
-        // 收集交易对配置
-        const pairs = [];
-        const pairElements = pairsContainer.querySelectorAll('.pair-item');
-        
-        pairElements.forEach(pairElement => {
-            const symbol = pairElement.querySelector('.pair-symbol').value.trim();
-            const maxPrice = pairElement.querySelector('.pair-max-price').value.trim();
-            const minPrice = pairElement.querySelector('.pair-min-price').value.trim();
-            
-            if (symbol) {
-                pairs.push({
-                    symbol,
-                    max_price: maxPrice,
-                    min_price: minPrice
-                });
-            }
-        });
-        
-        // 收集Telegram配置
-        const botToken = botTokenInput.value.trim();
-        const chatID = chatIDInput.value.trim();
-        
-        // 构建YAML内容
-        let yamlContent = '# Gate.io API 配置文件\n\n';
-        
-        // 添加服务器配置
-        yamlContent += '# 服务器配置\n';
-        yamlContent += 'Server:\n';
-        yamlContent += `  port: ${serverPortInput.value}\n\n`;
-        
-        // 添加交易对配置
-        yamlContent += '# 交易对列表，包含最大预期价格和最低预期价格\n';
-        yamlContent += 'pairs:\n';
-        pairs.forEach(pair => {
-            yamlContent += `  - symbol: ${pair.symbol}\n`;
-            yamlContent += `    max_price: ${pair.max_price}\n`;
-            yamlContent += `    min_price: ${pair.min_price}\n`;
-        });
-        yamlContent += '\n';
-        
-        // 添加Telegram配置
-        yamlContent += 'Telegram:\n';
-        yamlContent += `  botToken: ${botToken}\n`;
-        yamlContent += `  chatID: ${chatID}\n`;
-        
-        // 发送到后端保存
-        fetch(API_ENDPOINTS.SAVE_CONFIG, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'config=' + encodeURIComponent(yamlContent)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('保存配置失败');
-            }
-            return response.json();
-        })
-        .then(data => {
+
+    async function saveConfig() {
+        try {
+            const pairs = [];
+            const pairElements = elements.pairsContainer.querySelectorAll('.pair-item');
+
+            pairElements.forEach(pairElement => {
+                const symbol = pairElement.querySelector('.pair-symbol').value.trim();
+                const maxPriceInput = pairElement.querySelector('.pair-max-price').value.trim();
+                const minPriceInput = pairElement.querySelector('.pair-min-price').value.trim();
+
+                if (symbol) {
+                    const pairData = { symbol };
+                    if (maxPriceInput) {
+                        pairData.max_price = parseFloat(maxPriceInput);
+                    }
+                    if (minPriceInput) {
+                        pairData.min_price = parseFloat(minPriceInput);
+                    }
+                    pairs.push(pairData);
+                }
+            });
+
+            const configData = {
+                server: {
+                    port: parseInt(elements.serverPortInput.value) || 8080
+                },
+                pairs: pairs,
+                telegram: {
+                    botToken: elements.botTokenInput.value.trim(),
+                    chatID: elements.chatIDInput.value.trim()
+                },
+                fearGreed: parseInt(elements.fearGreedInput.value) || 50,
+                coinMarketCap: {
+                    apiKey: elements.cmcApiKeyInput.value.trim()
+                }
+            };
+
+            await API.saveConfig(configData);
             showNotification('配置保存成功', 'success');
-        })
-        .catch(error => {
-            showNotification('保存配置失败: ' + error.message, 'error');
+        } catch (error) {
             console.error('保存配置失败:', error);
-        });
+            showNotification('保存配置失败: ' + error.message, 'error');
+        }
     }
-    
-    // 显示通知
-    function showNotification(message, type) {
-        notification.textContent = message;
-        notification.className = 'notification ' + type;
-        
-        // 3秒后隐藏通知
+
+    function showNotification(message, type = 'info') {
+        elements.notification.textContent = message;
+        elements.notification.className = 'notification ' + type;
+
         setTimeout(() => {
-            notification.className = 'notification hidden';
+            elements.notification.classList.add('hidden');
         }, 3000);
     }
-});
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();

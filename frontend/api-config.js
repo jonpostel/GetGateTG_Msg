@@ -1,21 +1,73 @@
-// API配置文件
-// 修改此文件中的配置可以更改后端API的地址和端口
-
-// 后端服务器配置
 const API_CONFIG = {
-    // 后端服务器地址（不包含端口）
     HOST: 'localhost',
-    // 后端服务器端口
     PORT: '8080',
-    // API路径前缀
     PATH_PREFIX: '/api'
 };
 
-// 构建完整的API基础URL
 const API_BASE_URL = `http://${API_CONFIG.HOST}:${API_CONFIG.PORT}${API_CONFIG.PATH_PREFIX}`;
 
-// API端点
 const API_ENDPOINTS = {
     CONFIG: `${API_BASE_URL}/config`,
-    SAVE_CONFIG: `${API_BASE_URL}/save-config`
+    SAVE_CONFIG: `${API_BASE_URL}/config`,
+    FEAR_GREED: `${API_BASE_URL}/fear-greed`,
+    MARKET: `${API_BASE_URL}/market`
+};
+
+const API = {
+    async getConfig() {
+        const response = await fetch(API_ENDPOINTS.CONFIG);
+        const result = await response.json();
+        if (result.status !== 'success') {
+            throw new Error(result.error || '获取配置失败');
+        }
+        return result.data;
+    },
+
+    async saveConfig(configData) {
+        const response = await fetch(API_ENDPOINTS.SAVE_CONFIG, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(configData)
+        });
+        const result = await response.json();
+        if (result.status !== 'success') {
+            throw new Error(result.error || '保存配置失败');
+        }
+        return result;
+    },
+
+    async getFearGreed() {
+        const response = await fetch(API_ENDPOINTS.FEAR_GREED);
+        const result = await response.json();
+        if (result.status !== 'success') {
+            throw new Error(result.error || '获取恐惧贪婪指数失败');
+        }
+        return result.data;
+    },
+
+    async updateFearGreed(fearGreed) {
+        const response = await fetch(API_ENDPOINTS.FEAR_GREED, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ fearGreed })
+        });
+        const result = await response.json();
+        if (result.status !== 'success') {
+            throw new Error(result.error || '更新失败');
+        }
+        return result.data;
+    },
+
+    async getMarketData() {
+        const response = await fetch(API_ENDPOINTS.MARKET);
+        const result = await response.json();
+        if (result.status !== 'success') {
+            throw new Error(result.error || '获取市场数据失败');
+        }
+        return result.data;
+    }
 };

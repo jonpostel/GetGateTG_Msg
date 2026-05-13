@@ -10,10 +10,11 @@ import (
 )
 
 type Config struct {
-	Server    Server       `yaml:"Server"`
-	Pairs     []PairConfig `yaml:"pairs"`
-	Cellframe Cellframe    `yaml:"Cellframe"`
-	Telegram  Telegram     `yaml:"Telegram"`
+	Server        Server        `yaml:"Server"`
+	Pairs         []PairConfig  `yaml:"pairs"`
+	Telegram      Telegram      `yaml:"Telegram"`
+	FearGreed     int           `yaml:"FearGreed"`
+	CoinMarketCap CoinMarketCap `yaml:"CoinMarketCap"`
 }
 
 // Server 服务器配置结构体
@@ -28,13 +29,13 @@ type PairConfig struct {
 	MinPrice float64 `yaml:"min_price"`
 }
 
-type Cellframe struct {
-	WalletName string `yaml:"walletName"`
-}
-
 type Telegram struct {
 	BotToken string `yaml:"botToken"`
 	ChatID   string `yaml:"chatID"`
+}
+
+type CoinMarketCap struct {
+	APIKey string `yaml:"apiKey"`
 }
 
 // PairInfo 交易对信息结构体
@@ -54,12 +55,13 @@ var Myconfig = &Config{
 		Port: 8080, // 默认端口
 	},
 	Pairs: []PairConfig{},
-	Cellframe: Cellframe{
-		WalletName: "",
-	},
 	Telegram: Telegram{
 		BotToken: "",
 		ChatID:   "",
+	},
+	FearGreed: 50,
+	CoinMarketCap: CoinMarketCap{
+		APIKey: "",
 	},
 }
 

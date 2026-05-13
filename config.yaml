@@ -1,4 +1,4 @@
-保存配置失败: 保存配置失败# Gate.io API 配置文件
+# Gate.io API 配置文件
 
 # 服务器配置
 Server:
@@ -6,13 +6,20 @@ Server:
 
 # 交易对列表，包含最大预期价格和最低预期价格
 pairs:
-  - symbol: ADA_USDT
-    max_price: 5.5
-    min_price: 3.4
-  - symbol: DOT_USDT
-    max_price: 2.0
-    min_price: 1.0
+  - symbol: XX_USDT
+    max_price: 1
+    min_price: 0.1
+  - symbol: XX_USDT_USDT
+    max_price: 1
+    min_price: 0.1
+# 恐慌指标值
+FearGreed: 56
 
+# CoinMarketCap API 配置
+CoinMarketCap:
+  apiKey: 
+
+# Telegram 配置
 Telegram:
   botToken: 
-  chatID:
+  chatID: 
